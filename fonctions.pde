@@ -15,7 +15,7 @@
  
  You should have received a copy of the GNU General Public License
  along with Projet Chaos.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
 // Centrer la fenêtre sur l'écran (La position définie est celle du coin supérieur gauche de la fenêtre)
 void centrerFenetre() {
@@ -47,9 +47,9 @@ int transformerEnLargeur(String s) {
 
 // Fonction pour afficher un bouton dynamique (change de couleur si survolé)
 void afficherBouton(String texte, int x, int y, int largeur, int hauteur) {
-  fill(79, 84, 86);
+  fill(BOUTON);
   if (survole(x, y, largeur, hauteur)) {
-    fill(46, 65, 89);
+    fill(BOUTON_SURVOL);
   }
   rect(x, y, largeur, hauteur);
   fill(255);
@@ -59,4 +59,26 @@ void afficherBouton(String texte, int x, int y, int largeur, int hauteur) {
 // Cette fonction retourne true si le bouton donné en parametre est survolé par la souris
 boolean survole(int x, int y, int largeur, int hauteur) {
   return mouseX >= x && mouseX <= x + largeur && mouseY >= y && mouseY <= y + hauteur;
+}
+
+// Récupérer le chemin vers le dossier Documents de la session de l'utilisateur
+String mesDocuments() {
+  JFileChooser fr = new JFileChooser();
+  FileSystemView fw = fr.getFileSystemView();
+  return fw.getDefaultDirectory().getPath();
+}
+
+// Récupérer le fichier qui correspond au dossier classes
+File dossierEleves() {
+  return new File(mesDocuments() + File.separator + "Plan de classe", "classes");
+}
+
+// Récupérer le fichier qui correspond au dossier salles
+File dossierSalles() {
+  return new File(mesDocuments() + File.separator + "Plan de classe", "salles");
+}
+
+// Récupérer le fichier qui correspond au dossier photos
+File dossierPhotos() {
+  return new File(mesDocuments() + File.separator + "Plan de classe", "photos"); 
 }

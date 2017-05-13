@@ -18,9 +18,7 @@
 */
 
 String[] lignes;                              // Liste des lignes du fichier de salle à modifier
-HashMap<String, String> tablesEtCoordonnees;  // Liste associant les coordonnées d'une table dans la liste
-// des lignes aux coordonnées sur l'écran : "xFichier yFichier 0" => "x y largeurTable"
-HashMap<String, String> espacesEtCoordonnees; // Pareil mais pour les espaces
+HashMap<String, String> elementsEtCoordonnees;  // Liste associant les coordonnées d'un élément dans la liste des lignes aux coordonnées sur l'écran : "xFichier yFichier 0" => "x y largeur"
 ArrayList<String> tablesInvisibles;           // Liste des coordonnées des tables invisibles "xFichier yFichier 0"
 int xCurseur, yCurseur;                       // Coordonnées du curseur dans la liste des lignes
 
@@ -35,11 +33,11 @@ void setupSalle() {
 
   // Chargement du fichier de la salle
   eleves = new ArrayList();
-  File salle = new File(sketchPath("salles/" + salles.get(salleActuelle) + ".txt"));
+  File salle = new File(dossierSalles(), salles.get(salleActuelle) + ".txt");
   lignes = loadStrings(salle);
 
   // Affichage du rectangle du professeur, de la classe et de la salle choisies.
-  background(60, 63, 65);
+  background(FOND);
   fill(255);
   rect(450, 20, 300, 80);
   fill(0);
@@ -54,11 +52,22 @@ void setupSalle() {
   afficherEditeurSalle();
 }
 
+void aideEditeur(String texte) {
+  fill(BOUTON);
+  rect(760, 20, 415, 80);
+  textSize(13);
+  fill(255);
+  text(texte, 760, 20, 415, 80);
+}
+
 void drawSalle() {
   // Bouton accueil
   textSize(16);
   afficherBouton("Accueil", 20, 20, 100, 80);
-
+  
+  // Zone aide
+  aideEditeur("Déplacez le curseur à l'aide des flèches du clavier et ajoutez des éléments avec les boutons disponibles. Vous pouvez supprimer un élément en cliquant sur la croix qui apparaît au survol.");
+  
   // Boutons d'ajout
   textSize(12);
   afficherBouton("Ajouter espace", 130, 20, 97, 35);
@@ -76,42 +85,29 @@ void drawSalle() {
   // Pour chaque entrée de la liste de tables, on récupère la valeur de l'entrée qui est les coordonnées de la table sur l'écran.
   // On récupère le x, le y, la largeur de table à partir de cette valeur ("x y largeurTable"), et si la souris est sur la table
   // on affiche la croix.
-  for (Map.Entry<String, String> entry : tablesEtCoordonnees.entrySet()) {
+  for (Map.Entry<String, String> entry : elementsEtCoordonnees.entrySet()) {
     String coords = entry.getValue();
     int x = transformerEnX(coords);
     int y = transformerEnY(coords);
-    int largeurTable = transformerEnLargeur(coords);
-    if (survole(x, y, largeurTable, 80)) {
-      image(croix, x + 5, y + 5);
-    }
-  }
-
-  // On affiche les croix sur les espaces (pareil que pour les tables)
-  for (Map.Entry<String, String> entry : espacesEtCoordonnees.entrySet()) {
-    String coords = entry.getValue();
-    int x = transformerEnX(coords);
-    int y = transformerEnY(coords);
-    if (survole(x, y, 20, 80)) {
-      image(croix, x + 2, y + 5);
+    int largeur = transformerEnLargeur(coords);
+    if (survole(x, y, largeur - 1, 80)) {
+      image(croix, x + 3, y + 3);
     }
   }
 
   // Affichage du curseur :
   // On regroupe tables & espaces dans la même liste, afin de trouver les coordonnées du curseur
   // (qui correspondent à celle d'une table ou d'un espace dans le fichier)
-  HashMap<String, String> tablesEtEspaces = new HashMap();
-  tablesEtEspaces.putAll(espacesEtCoordonnees);
-  tablesEtEspaces.putAll(tablesEtCoordonnees);
 
   // Style du curseur (épaisseur et couleur)
   strokeWeight(4);
   stroke(255, 0, 0);
   // On récupère les coordonnées du curseur sur l'écran à partir de la liste créée juste avant
-  String coordsCurseur = tablesEtEspaces.get(coordonnees(xCurseur, yCurseur, 0));
+  String coordsCurseur = elementsEtCoordonnees.get(coordonnees(xCurseur, yCurseur, 0));
 
   // Si il y a des tables dans la liste + éventuelle prise en compte d'erreur,
   // on récupère x et y et on affiche le curseur (ligne rouge)
-  if (tablesEtEspaces.size() != 0 && coordsCurseur != null) {
+  if (elementsEtCoordonnees.size() != 0 && coordsCurseur != null) {
     int x = transformerEnX(coordsCurseur);
     int y = transformerEnY(coordsCurseur);
     line(x, y, x, y + 80);
@@ -182,26 +178,14 @@ void mouseClickedSalle() {
     ajouterLigneEtCaractere('i');
   }
 
-  // Croix sur les tables
-  for (Map.Entry<String, String> entry : tablesEtCoordonnees.entrySet()) {
+  // Croix sur les elements
+  for (Map.Entry<String, String> entry : elementsEtCoordonnees.entrySet()) {
     String coordsFichier = entry.getKey();
     String coords = entry.getValue();
     int x = transformerEnX(coords);
     int y = transformerEnY(coords);
 
-    if (survole(x + 5, y + 5, 20, 20)) { // Si la souris est sur la croix, on supprime le caractère aux coordonnées dans le fichier (ligne et position dans la ligne) 
-      supprimerCaractere(coordsFichier);
-    }
-  }
-
-  // Croix sur les espaces
-  for (Map.Entry<String, String> entry : espacesEtCoordonnees.entrySet()) {
-    String coordsFichier = entry.getKey();
-    String coords = entry.getValue();
-    int x = transformerEnX(coords);
-    int y = transformerEnY(coords);
-
-    if (survole(x + 5, y + 5, 20, 20)) {
+    if (survole(x + 3, y + 3, 20, 20)) { // Si la souris est sur la croix, on supprime le caractère aux coordonnées dans le fichier (ligne et position dans la ligne) 
       supprimerCaractere(coordsFichier);
     }
   }
@@ -255,6 +239,7 @@ void ajouterLigneEtCaractere(char c) {
   }
   lignes = new String[array.size()];                     // On remplace la liste "lignes" et on enregistre
   lignes = array.toArray(lignes);
+  yCurseur++;
   enregistrerFichier();
   verifierCurseur();
 }
@@ -283,7 +268,7 @@ void enregistrerFichier() {  // On utilise une structure try/catch car on doit t
   try {
     // On initialise un PrintWriter qui permet d'écrire dans un fichier. On lui donne en paramètre le chemin du fichier de la salle
     // actuelle à partir du dossier du projet avec sketchPath()
-    PrintWriter out = new PrintWriter(sketchPath("salles/" + salles.get(salleActuelle) + ".txt"));
+    PrintWriter out = new PrintWriter(dossierSalles() + "/" + salles.get(salleActuelle) + ".txt");
     // On écrit chaque ligne de la liste "lignes" dans le fichier
     for (String s : lignes) {
       out.println(s);
@@ -297,12 +282,11 @@ void enregistrerFichier() {  // On utilise une structure try/catch car on doit t
 }
 
 void afficherEditeurSalle() {
-  tablesEtCoordonnees = new HashMap();  // On initialse les HashMap qui nous servent à stocker les coordonnées des tables et espaces sur l'écran en fonction de leurs coordonnées dans le fichier de la salle (liste "lignes")
-  espacesEtCoordonnees = new HashMap(); 
+  elementsEtCoordonnees = new HashMap();  // On initialse les HashMap qui nous servent à stocker les coordonnées des tables et espaces sur l'écran en fonction de leurs coordonnées dans le fichier de la salle (liste "lignes")
   tablesInvisibles = new ArrayList();   // De même pour la liste des tables invisibles, qui contient leurs coordonnées sur l'écran uniquement
 
   // On affiche un grand rectangle pour effacer le précédent plan afficher
-  fill(60, 63, 65);
+  fill(FOND);
   stroke(60, 63, 65);
   rect(0, 110, 1200, 690);
   stroke(95); // On garde une bordure pour les tables ET espaces / tables invisibles pour les repérer
@@ -324,8 +308,8 @@ void afficherEditeurSalle() {
 
     if (tables == 0 && espaces != 0) {                                                                               // Si il n'y a aucune table et qu'il y a des espaces, on affiche uniquement ceux-ci
       for (char caractere : caracteres) {                                                                            // Pour chaque caractère qui est un espace ... Donc on a pas besoins de vérifier ce que c'est : "caractere" est inutilisé mais on doit utiliser la boucle for quand même
-        espacesEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, 0));                // On ajoute l'espace dans l'HashMap des espaces, avec ses coordonnées dans le fichier texte et sur l'écran (largeurTable = 0 dans coordonnees() car un espace a une largeur de 20px) 
-        fill(60, 63, 65);                                                                                            // On l'affiche de la même couleur que le fond
+        elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, 20));                // On ajoute l'espace dans l'HashMap des espaces, avec ses coordonnées dans le fichier texte et sur l'écran (largeurTable = 0 dans coordonnees() car un espace a une largeur de 20px) 
+        fill(FOND);                                                                                            // On l'affiche de la même couleur que le fond
         rect(x, y, 20, 80);
         x += 20;                                                                                                     // On incrémente le x d'affichage des éléments et le x du fichier
         xFichierTexte++;
@@ -336,21 +320,21 @@ void afficherEditeurSalle() {
 
       for (char signe : caracteres) {                                                                                // Pour chaque caractère de la ligne ...
         if (signe == ' ') {                                                                                          // Si c'est un espace, on l'ajoute à l'HashMap et on affiche le rectangle
-          espacesEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, 0));
+          elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, 20));
           fill(60, 63, 65);
           rect(x, y, 20, 80);
           x += 20;                                                                                                   // On incrémente le x d'une largeur d'espace
         } else {                                                                                                     // Sinon, si c'est une table invisible on l'ajoute à la liste des tables invisibles, on l'affiche avec sa couleur
           if (signe == 'i') {
             tablesInvisibles.add(coordonnees(xFichierTexte, yFichierTexte, 0));
-            fill(60, 63, 65);
+            fill(FOND);
             rect(x, y, largeurTable, 80);
           } else {                                                                                                   // Si c'est une table normale on l'affiche blanche
             fill(255);
             rect(x, y, largeurTable, 80);
           }
 
-          tablesEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, largeurTable));    // Dans les deux cas on stocke les coordonnées dans l'HashMap des tables avec la largeurTable cette fois
+          elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, largeurTable));    // Dans les deux cas on stocke les coordonnées dans l'HashMap des tables avec la largeurTable cette fois
           x += largeurTable;                                                                                         // On incrémente le x d'une largeur de table
         }
         xFichierTexte++;                                                                                             // On incrémente le x du fichier texte de 1 pour passer au caractère suivant

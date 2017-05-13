@@ -15,9 +15,13 @@
  
  You should have received a copy of the GNU General Public License
  along with Projet Chaos.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ */
 
+String coordsEleveChoisi;                    // Coordonées sous forme "x y" de l'élève séléctionné lorsque le plan de classe est affiché
+int indexEleveChoisi;                        // Index de l'élève qui est séléctionné dans la liste "eleves"
+HashMap<String, String> elevesEtCoordonnees; // HashMap (association de deux objets) associant les coordonnées d'un élève dans le plan de classe sous forme "x y" au nom de cet élève
 ArrayList<String> placesDesactivees;
+HashMap<String, PImage> photos;
 
 // Passer à l'affichage du plan de classe
 void plan() {
@@ -29,18 +33,29 @@ void setupPlan() {
   centrerFenetre();
   statut = "plan_pret"; // On change immédiatement le statut, au prochain tour de la boucle draw() ce sera drawPlan() qui sera éxécuté en boucle
 
+  photos = new HashMap();
+  File[] fichiersPhotos = dossierPhotos().listFiles();
+
   // Chargement des élèves, comme pour la salle et la classe
-  File classe = new File(sketchPath("eleves/" + classes.get(classeActuelle) + ".txt"));
+  File classe = new File(dossierEleves(), classes.get(classeActuelle) + ".txt");
   String[] lignesClasse = loadStrings(classe);
   eleves = new ArrayList();
   for (String ligne : lignesClasse) {
     if (!ligne.startsWith("//")) { // On exclue les commentaires de le fichier de classe
       eleves.add(ligne);
+      for (File file : fichiersPhotos) {
+        if (file.isFile() && file.getName().toLowerCase().contains(ligne.toLowerCase())) {
+          PImage image = loadImage(file.getAbsolutePath());
+          if (image != null) {
+            photos.put(ligne, image);
+          }
+        }
+      }
     }
   }
 
   // On charge le fichier de la salle que l'on va lire ligne par ligne (stockées dans une liste de String)
-  File salle = new File(sketchPath("salles/" + salles.get(salleActuelle) + ".txt"));
+  File salle = new File(dossierSalles(), salles.get(salleActuelle) + ".txt");
   lignes = loadStrings(salle);
 
   // Affichage du rectangle du professeur, de la classe et de la salle choisies
@@ -59,7 +74,8 @@ void drawPlan() {
   // Boutons Accueil et Réorganiser :
   textSize(16);
   afficherBouton("Accueil", 20, 20, 200, 80);
-  afficherBouton("Réorganiser", 980, 20, 200, 80);
+  afficherBouton("Réorganiser", 235, 20, 200, 80);
+  aidePlan("Il est " + hour() + ":" + minute() + ":" + second() + ", nous sommes le " + day() + "/" + month() + "/" + year() + ".\nClic gauche sur un élève pour débuter un échange de place\nClic droit pour désactiver une place");
 
   // Si aucune case n'est séléctionnée, on affiche le plan et les croix + photo
   if (coordsEleveChoisi == "") {                                                               // Si aucune case n'est séléctionnée il y a "" dans la variable de ses coordonnées
@@ -74,29 +90,40 @@ void drawPlan() {
 
       if (survole(x, y, largeurTable, 80)) {                                                   // Si la souris survole la table de cet élève, ...
         image(croix, x + 5, y + 5);                                                            // On affiche la croix permettant de le supprimer
+        aidePlan("Cliquez sur la croix pour enlever l'élève du plan\n(si il est absent par exemple)");
 
         // On affiche l'éventuelle photo
-        PImage photo = loadImage("photos/" + nom + ".png");                                    // On charge l'image correspondant au nom de l'élève donné en paramètre
-        if (photo != null) {                                                                   // Si la photo existe (si la variable photo ne contient pas "null" : si le fichier existe) ...
+        if (photos.containsKey(nom)) {                                                                   // Si la photo existe (si la variable photo ne contient pas "null" : si le fichier existe) ...
+          PImage photo = photos.get(nom);
           photo.resize(0, 128);                                                                // On redimensionne la photo (x = 0 permet de garder les proportions tout en définissant la hauteur)
           image(photo, 50, 650);                                                               // On l'affiche
         }
       }
     }
+  } else {
+    aidePlan("Cliquez sur l'élève avec qui " + eleves.get(indexEleveChoisi) + " doit échanger sa place, ou cliquez à nouveau sur la place pour annuler.");
   }
+}
+
+void aidePlan(String texte) {
+  fill(79, 84, 86);
+  rect(765, 20, 410, 80);
+  textSize(14);
+  fill(255);
+  text(texte, 767, 20, 408, 80);
 }
 
 void mouseClickedPlan() {
   // Ce code s'éxecute lorsque le plan de classe est affiché et qu'on clique sur la souris
   if (mouseButton == LEFT) { // Clic gauche
-  
+
     // Bouton Accueil
     if (survole(20, 20, 200, 80)) {
       ecranAccueil(); // On retourne sur l'écran d'accueil
     }
-    
+
     // Bouton réorganiser
-    if (survole(980, 20, 200, 80)) {
+    if (survole(235, 20, 200, 80)) {
       planAleatoire(); // On refait un plan aléatoire
     }
 
@@ -129,13 +156,13 @@ void mouseClickedPlan() {
             coordsEleveChoisi = "";
           } else {                                                           // Sinon on a cliqué sur un autre élève
             Collections.swap(eleves, indexEleveChoisi, eleves.indexOf(nom)); // On les inverse dans la liste des élèves
-            coordsEleveChoisi = "";                                          // On enlève les coordonnées de l'élève choisi (on peut laisser indexEleveChoisi tel quel, on ne l'utilise jamais pour faire des vérifications)
-          }
+            coordsEleveChoisi = "";                                          // On enlève les coordonnées de l'élève choisi (on peut laisser indexEleveChoisi
+          }                                                                  // tel quel, on ne l'utilise jamais pour faire des vérifications)
         }
       }
     }
-  } else {                // Clic droit : désactiver / activer place
-    boolean desactive = false; // Permet de savoir si on vient de désactiver une place, pour ne pas la réactiver instantanément
+  } else if (coordsEleveChoisi == "") { // Clic droit : désactiver / activer place. On ne désactive / active pas de place lorsque on déplace un élève car le plan ne s'actualise pas pendant ce temps là
+    boolean desactive = false;   // Permet de savoir si on vient de désactiver une place, pour ne pas la réactiver instantanément
 
     // Désactivation de l'éventuelle place cliquée (Pour chaque place, on vérifie si on a cliqué dessus. Si c'est le cas, on ajoute ses coordonnées à la liste des tables désactivées)
     for (Map.Entry<String, String> entry : elevesEtCoordonnees.entrySet()) {

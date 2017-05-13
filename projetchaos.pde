@@ -30,6 +30,13 @@
 import controlP5.*;
 import java.awt.Desktop;
 import java.util.*;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileSystemView;
+
+// Constantes
+color FOND = color(60, 63, 65);
+color BOUTON = color(79, 84, 86);
+color BOUTON_SURVOL = color(46, 65, 89);
 
 String statut;                               // Correspond à l'état du programme : si il est sur la fenêtre d'accueil, si il va l'afficher, si il est sur une autre fenêtre ...
 ArrayList<String> classes;                   // Liste qui contient toutes les classes disponibles
@@ -39,10 +46,9 @@ int salleActuelle;                           // Index de la salle actuellement s
 PImage flecheGauche;                         // Image correspondant à la flèche gauche utilisée sur l'écran de démarrage pour la séléction de classe / salle
 PImage flecheDroite;                         // Image de la flèche droite
 PImage croix;                                // Image de la croix pour supprimer un élève du plan de classe
+PImage dossier;                              // Image du dossier sur l'écran d'accueil
+PImage actualiser;                           // Image de l'icone actualiser
 ArrayList<String> eleves;                    // Liste des élèves de la classe actuellement chargée
-String coordsEleveChoisi;                    // Coordonées sous forme "x y" de l'élève séléctionné lorsque le plan de classe est affiché
-int indexEleveChoisi;                        // Index de l'élève qui est séléctionné dans la liste "eleves"
-HashMap<String, String> elevesEtCoordonnees; // HashMap (association de deux objets) associant les coordonnées d'un élève dans le plan de classe sous forme "x y" au nom de cet élève
 PFont verdana;                               // Police utilisée pour les éléments de ControlP5
 ControlP5 cp5;                               // ControlP5, librairie qu'on utilise pour les zones de texte
 
@@ -50,9 +56,14 @@ void setup() {
   // Chargement des images des flèches et de la croix de suppression
   flecheDroite = loadImage("fleche_droite.png");
   flecheGauche = loadImage("fleche_gauche.png");
+  dossier = loadImage("icone_dossier.png");
+  dossier.resize(40, 0);
+  actualiser = loadImage("icone_actualiser.png");
+  actualiser.resize(40, 0);
   croix = loadImage("croix.png");
   // Chargement de la police
-  verdana = createFont("Verdana", 16);
+  verdana = createFont("Verdana", 16);  
+  
   // Affichage de l'écran d'accueil
   ecranAccueil();
   
