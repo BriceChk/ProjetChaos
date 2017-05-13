@@ -18,8 +18,8 @@
 */
 
 String[] lignes;                              // Liste des lignes du fichier de salle à modifier
-HashMap<String, String> elementsEtCoordonnees;  // Liste associant les coordonnées d'un élément dans la liste des lignes aux coordonnées sur l'écran : "xFichier yFichier 0" => "x y largeur"
-ArrayList<String> tablesInvisibles;           // Liste des coordonnées des tables invisibles "xFichier yFichier 0"
+HashMap<String, String> elementsEtCoordonnees;// Liste associant les coordonnées d'un élément dans la liste des lignes aux coordonnées sur l'écran : "xFichier yFichier 0" => "x y largeur"
+ArrayList<String> tablesInvisibles;           // Liste des coordonnées des tables invisibles "x y largeur"
 int xCurseur, yCurseur;                       // Coordonnées du curseur dans la liste des lignes
 
 void editeurSalle() {
@@ -298,7 +298,7 @@ void afficherEditeurSalle() {
   for (String ligne : lignes) {                                                                                      // Pour chaque ligne du plan ...
     int tables = 0, espaces = 0, largeur = 1160, x = 20, xFichierTexte = 0;                                          // On initialise le nombre d'espaces / places / la largeur dispo / le x pour afficher les éléments / le x du fichier texte
     char[] caracteres = ligne.toCharArray();                                                                         // On sépare les caractère de la ligne dans une liste de caractères
-    for (char caractere : caracteres) {                                                                                  // Pour chacun des caractères de la ligne, on vérifie si c'est un espace ou une table (invisble ou non) pour les compter
+    for (char caractere : caracteres) {                                                                              // Pour chacun des caractères de la ligne, on vérifie si c'est un espace ou une table (invisble ou non) pour les compter
       if (caractere == ' ') {
         espaces++;
       } else {
@@ -308,8 +308,8 @@ void afficherEditeurSalle() {
 
     if (tables == 0 && espaces != 0) {                                                                               // Si il n'y a aucune table et qu'il y a des espaces, on affiche uniquement ceux-ci
       for (char caractere : caracteres) {                                                                            // Pour chaque caractère qui est un espace ... Donc on a pas besoins de vérifier ce que c'est : "caractere" est inutilisé mais on doit utiliser la boucle for quand même
-        elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, 20));                // On ajoute l'espace dans l'HashMap des espaces, avec ses coordonnées dans le fichier texte et sur l'écran (largeurTable = 0 dans coordonnees() car un espace a une largeur de 20px) 
-        fill(FOND);                                                                                            // On l'affiche de la même couleur que le fond
+        elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, 20));              // On ajoute l'espace dans l'HashMap des espaces, avec ses coordonnées dans le fichier texte et sur l'écran (largeurTable = 0 dans coordonnees() car un espace a une largeur de 20px) 
+        fill(FOND);                                                                                                  // On l'affiche de la même couleur que le fond
         rect(x, y, 20, 80);
         x += 20;                                                                                                     // On incrémente le x d'affichage des éléments et le x du fichier
         xFichierTexte++;
@@ -334,7 +334,7 @@ void afficherEditeurSalle() {
             rect(x, y, largeurTable, 80);
           }
 
-          elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, largeurTable));    // Dans les deux cas on stocke les coordonnées dans l'HashMap des tables avec la largeurTable cette fois
+          elementsEtCoordonnees.put(coordonnees(xFichierTexte, yFichierTexte, 0), coordonnees(x, y, largeurTable));  // Dans les deux cas on stocke les coordonnées dans l'HashMap des tables avec la largeurTable cette fois
           x += largeurTable;                                                                                         // On incrémente le x d'une largeur de table
         }
         xFichierTexte++;                                                                                             // On incrémente le x du fichier texte de 1 pour passer au caractère suivant

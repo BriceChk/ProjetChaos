@@ -33,7 +33,7 @@ import java.util.*;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileSystemView;
 
-// Constantes
+// Constantes pour les couleurs utilisées plusieurs fois
 color FOND = color(60, 63, 65);
 color BOUTON = color(79, 84, 86);
 color BOUTON_SURVOL = color(46, 65, 89);

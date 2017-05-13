@@ -33,20 +33,20 @@ void setupPlan() {
   centrerFenetre();
   statut = "plan_pret"; // On change immédiatement le statut, au prochain tour de la boucle draw() ce sera drawPlan() qui sera éxécuté en boucle
 
-  photos = new HashMap();
-  File[] fichiersPhotos = dossierPhotos().listFiles();
+  photos = new HashMap();                                                                      // Création de l'HashMap contenant le nom de l'élève avec sa photo
+  File[] fichiersPhotos = dossierPhotos().listFiles();                                         // Liste des fichiers du dossier photos
 
   // Chargement des élèves, comme pour la salle et la classe
-  File classe = new File(dossierEleves(), classes.get(classeActuelle) + ".txt");
-  String[] lignesClasse = loadStrings(classe);
-  eleves = new ArrayList();
-  for (String ligne : lignesClasse) {
-    if (!ligne.startsWith("//")) { // On exclue les commentaires de le fichier de classe
-      eleves.add(ligne);
-      for (File file : fichiersPhotos) {
+  File classe = new File(dossierEleves(), classes.get(classeActuelle) + ".txt");               // Fichier de la classe
+  String[] lignesClasse = loadStrings(classe);                                                 // Liste des lignes de ce fichier
+  eleves = new ArrayList();                                                                    // Initialisation de la liste des élèves
+  for (String ligne : lignesClasse) {                                                          // Pour chaque ligne (élève) ...
+    if (!ligne.startsWith("//")) { // On exclue les commentaires de le fichier de classe       // On vérifie que ce ne soit pas un commentaire
+      eleves.add(ligne);                                                                       // On ajoute l'élève à la liste
+      for (File file : fichiersPhotos) {                                                       // Pour chaque fichier photo, on vérifie que le nom du fichier contienne le nom de l'élève (tout mis en minuscules pour ne pas prendre en compte la casse)
         if (file.isFile() && file.getName().toLowerCase().contains(ligne.toLowerCase())) {
-          PImage image = loadImage(file.getAbsolutePath());
-          if (image != null) {
+          PImage image = loadImage(file.getAbsolutePath());                                    // On charge l'image à partir de ce fichier
+          if (image != null) {                                                                 // Si l'image n'est pas nulle (le fichier est d'un type supporté par Processing), on l'ajoute à la liste
             photos.put(ligne, image);
           }
         }
@@ -93,18 +93,20 @@ void drawPlan() {
         aidePlan("Cliquez sur la croix pour enlever l'élève du plan\n(si il est absent par exemple)");
 
         // On affiche l'éventuelle photo
-        if (photos.containsKey(nom)) {                                                                   // Si la photo existe (si la variable photo ne contient pas "null" : si le fichier existe) ...
-          PImage photo = photos.get(nom);
+        if (photos.containsKey(nom)) {                                                         // Si la photo de cet élève existe
+          PImage photo = photos.get(nom);                                                      // On la récupère dans la liste
           photo.resize(0, 128);                                                                // On redimensionne la photo (x = 0 permet de garder les proportions tout en définissant la hauteur)
           image(photo, 50, 650);                                                               // On l'affiche
         }
       }
     }
   } else {
+    // Si une case est séléctionnée, on affiche le message d'aide correspondant
     aidePlan("Cliquez sur l'élève avec qui " + eleves.get(indexEleveChoisi) + " doit échanger sa place, ou cliquez à nouveau sur la place pour annuler.");
   }
 }
 
+// Cette fonction permet d'afficher le cadre d'aide en haut à droite
 void aidePlan(String texte) {
   fill(79, 84, 86);
   rect(765, 20, 410, 80);
@@ -213,10 +215,10 @@ void afficherPlan() {
 
   // Pour chaque ligne, ...
   for (String ligne : lignes) {
-    int places = 0, espaces = 0, largeur = 1160, x = 20; // On va compter le nombre de tables, d'espaces entre tables. On dispose au départ d'une largeur de 1160 pixels, et on commence à 20px du bord pour afficher les places
-    char[] signes = ligne.toCharArray();                 // On crée une liste des caractères de la ligne lue
-    for (char signe : signes) {                          // Pour chaque caractère, on vérifie si c'est un espace ou un autre caractère et on incrémente la variable qui correspond.
-      if (signe == ' ') {                              // Un espace correspond à un espace sur le plan, un autre caractère correspond à une table
+    int places = 0, espaces = 0, largeur = 1160, x = 20;         // On va compter le nombre de tables, d'espaces entre tables. On dispose au départ d'une largeur de 1160 pixels, et on commence à 20px du bord pour afficher les places
+    char[] caracteres = ligne.toCharArray();                     // On crée une liste des caractères de la ligne lue
+    for (char caractere : caracteres) {                          // Pour chaque caractère, on vérifie si c'est un espace ou un autre caractère et on incrémente la variable qui correspond.
+      if (caractere == ' ') {                                    // Un espace correspond à un espace sur le plan, un autre caractère correspond à une table
         espaces++;
       } else {
         places++;
@@ -229,19 +231,19 @@ void afficherPlan() {
       continue;
     }
 
-    largeur -= espaces * 20;            // On calcule la place qu'il reste pour les tables, les espaces ayant une largeur fixe.
-    int largeurTable = largeur / places;    // On en déduit la largeur d'une table avec l'espace qu'il reste.
+    largeur -= espaces * 20;                                       // On calcule la place qu'il reste pour les tables, les espaces ayant une largeur fixe.
+    int largeurTable = largeur / places;                           // On en déduit la largeur d'une table avec l'espace qu'il reste.
 
-    for (char signe : signes) {                            // On refait le tour des caractères, cette fois pour afficher le rectangle ou compter l'espace
-      if (signe == ' ') {                                // Si c'est un espace, on incrémente le x de 20 et on passe au caractère suivant
+    for (char caractere : caracteres) {                            // On refait le tour des caractères, cette fois pour afficher le rectangle ou compter l'espace
+      if (caractere == ' ') {                                      // Si c'est un espace, on incrémente le x de 20 et on passe au caractère suivant
         x += 20;
-      } else {                                           // Si c'est un caractère, ...
-        if (signe == 'i') {                            // Si c'est une table invisible, on ne cherche pas a afficher de rectangle ni de nom
+      } else {                                                     // Si c'est un caractère, ...
+        if (caractere == 'i') {                                    // Si c'est une table invisible, on ne cherche pas a afficher de rectangle ni de nom
           x += largeurTable;
           continue;
         }
 
-        String coords = coordonnees(x, y, largeurTable);                 // On transforme les coordonnées de la table ou il va être placé en texte pour le stocker dans l'HashMap
+        String coords = coordonnees(x, y, largeurTable);           // On transforme les coordonnées de la table ou il va être placé en texte pour le stocker dans l'HashMap
 
         // On affiche la table (grise si désactivée)
         if (placesDesactivees.contains(coords)) {
@@ -252,7 +254,7 @@ void afficherPlan() {
         rect(x, y, largeurTable, 80);
 
         if (!placesDesactivees.contains(coords) && copieEleves.size() != 0) {  // Si il reste des élèves dans la liste des élèves à afficher et que la place n'est pas désactivée, ...
-          String nomEleve = copieEleves.get(0);                              // On récupère son nom que l'on met dans le texte à afficher sur la table et on l'enlève de la liste
+          String nomEleve = copieEleves.get(0);                                // On récupère son nom que l'on met dans le texte à afficher sur la table et on l'enlève de la liste
           copieEleves.remove(0);
           elevesEtCoordonnees.put(nomEleve, coords);
           fill(0);
