@@ -53,7 +53,7 @@ PFont verdana;                               // Police utilisée pour les élém
 ControlP5 cp5;                               // ControlP5, librairie qu'on utilise pour les zones de texte
 
 void setup() {
-  // Chargement des images des flèches et de la croix de suppression
+  // Chargement des images des flèches et de la croix de suppression et du dossier / actualiser
   flecheDroite = loadImage("fleche_droite.png");
   flecheGauche = loadImage("fleche_gauche.png");
   dossier = loadImage("icone_dossier.png");
@@ -64,7 +64,11 @@ void setup() {
   // Chargement de la police
   verdana = createFont("Verdana", 16);  
   
-  // Affichage de l'écran d'accueil
+  cp5 = new ControlP5(this);                            // Initialisation de ControlP5
+  cp5.setColorBackground(0xff4f5456);                   // Changement de la couleur de fond des éléments CP5 (0xff + code habituel)
+  
+  // Titre de la fenêtre et affichage de l'écran d'accueil
+  surface.setTitle("Plan de classe");
   ecranAccueil();
   
   // Message licence

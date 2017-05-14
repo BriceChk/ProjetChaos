@@ -26,27 +26,17 @@ void ecranAccueil() {
   statut = "accueil_attente"; // Ce statut permettra d'éxecuter la fonction setupAccueil() au prochain tour de la boucle draw(), ce qui est nécéssaire pour son affichage suite au changement de taille de la fenêtre
 }
 
-void setupAccueil() {
-  // Ce code ne s'éxecute qu'une fois lors de l'affichage de l'écran d'accueil.
+void setupAccueil() {                                   // Ce code ne s'éxecute qu'une fois lors de l'affichage de l'écran d'accueil.
   statut = "accueil_pret";                              // On change immédiatement le statut, au prochain tour de la boucle draw() ce sera drawAccueil() qui sera éxécuté en boucle
-
   stroke(95);                                           // Couleur des bordures des rectangles
-  surface.setTitle("Plan de classe");                   // Titre de la fenêtre
 
-  cp5 = new ControlP5(this);                            // Initialisation de ControlP5
-  cp5.setColorBackground(0xff4f5456);                   // Changement de la couleur de fond des éléments CP5 (0xff + code habituel)
-
-  chargerSallesEtClasses();
-
-  // On initialise cette variable car elle sera utilisée même si on a rien à mettre dedans
-  coordsEleveChoisi = "";
-
-  erreur = false;
+  coordsEleveChoisi = "";                               // On initialise cette variable car elle sera utilisée même si on a rien à mettre dedans
+  erreur = false;                                       // Booléen qui est vrai lorsqu'un avertissement de fichier déjà existant doit être affiché
 
   // Couleur de fond, police, centrage de fenetre
   background(FOND);
   textSize(16);
-  textAlign(CENTER, CENTER); // Cela permet d'afficher le texte au centre du rectangle que l'on met en paramètre de text("texte", x, y, largeur, hauteur)
+  textAlign(CENTER, CENTER);                            // Cela permet d'afficher le texte au centre du rectangle lorsqu'on utilise text("texte", x, y, largeur, hauteur)
   centrerFenetre();
 
   // Texte correspondant aux choix de classe / salle
@@ -61,17 +51,20 @@ void setupAccueil() {
   image(flecheDroite, 410, 180);
 
   // Affichage du nom du logiciel
+  textSize(40);
+  text("Plan de classe", 0, 20, 450, 100);
+  textSize(16);
+  text("Projet Chaos", 90, 90, 100, 20);
+
+  // Crédits
   fill(BOUTON);
   textSize(12);
   textAlign(LEFT);
   text("Emmanuel Dupré la Tour, Lucas Lesourd, Brice Chkir", 5, 5, 450, 15);
   fill(255);
   textAlign(CENTER, CENTER);
-  textSize(40);
-  text("Plan de classe", 0, 20, 450, 100);
-  textSize(16);
-  text("Projet Chaos", 90, 90, 100, 20);
-  textSize(16);
+
+  chargerSallesEtClasses();                             // Chargement initial des salles et classes
 }
 
 void drawAccueil() {
@@ -126,12 +119,13 @@ void drawAccueil() {
   fill(BOUTON);
   rect(50, 310, 350, 50);
   fill(255);
-  if (salles.size() == 0) {
+  if (salles.size() == 0) {                             // Si il n'y a pas de salle de chargée, on affiche un message
     text("Aucune salle", 50, 310, 350, 50);
   } else {
     text(salles.get(salleActuelle), 50, 310, 350, 50);
   }
-  
+
+  // Textes d'aide si une zone de texte pour créer salle ou classe est affichée
   textSize(13);
   if (cp5.get(Bang.class, "Creer") != null) {
     afficherBouton("Entrez un nom de salle dans la zone de texte. Cliquez sur une flèche pour annuler.", 80, 435, 290, 50);
@@ -139,11 +133,11 @@ void drawAccueil() {
   if (cp5.get(Bang.class, "CREER") != null) {
     afficherBouton("Entrez un nom de classe dans la zone de texte. Cliquez sur une flèche pour annuler.", 80, 435, 290, 50);
   }
-  
-  if (erreur) {
-    if (tempsErreur == 0) {
+
+  if (erreur) {                                                              // Si il y a une erreur à afficher
+    if (tempsErreur == 0) {                                                  // Si on arrive au bout du temps d'affichage
       erreur = false;
-    } else {
+    } else {                                                                 // Sinon on affiche le message d'erreur et on diminue le temps d'erreur de 1.
       afficherBouton("Erreur : ce fichier existe déjà.", 80, 435, 290, 50);
       tempsErreur--;
     }
@@ -253,7 +247,7 @@ void CREER() {
   Textfield field = cp5.get(Textfield.class, " ");                                  // On récupère la zone de texte correspondant à la création de classe
   String nomClasse = field.getText();                                               // On en extrait le texte tapé par l'utilisateur
   if (nomClasse.length() > 0) {                                                     // Si il a tapé quelques chose ...
-    File fichier = new File(dossierEleves(), nomClasse + ".txt");                   // On initialise le fichier de cette classe
+    File fichier = fichierClasse(nomClasse + ".txt");                               // On initialise le fichier de cette classe
     if (fichier.exists()) {                                                         // Si il existe déjà, on avertit l'utilisateur
       erreur();
     } else {                                                                        // Sinon, on le crée, avec structure try/catch (on touche à un fichier)
@@ -281,7 +275,7 @@ void Creer() {
   Textfield field = cp5.get(Textfield.class, "   ");                     // On récupère la zone de texte correspondant à la création de salle
   String nomSalle = field.getText();                                     // On en extrait le texte tapé par l'utilisateur
   if (nomSalle.length() > 0) {                                           // Si il a tapé quelques chose ...
-    File fichier = new File(dossierSalles(), nomSalle + ".txt");         // On initialise le fichier de cette salle
+    File fichier = fichierSalle(nomSalle + ".txt");                      // On initialise le fichier de cette salle
     if (fichier.exists()) {                                              // Si il existe déjà, on avertit l'utilisateur
       erreur();
     } else {                                                             // Sinon, on le crée, avec structure try/catch (on touche à un fichier)
@@ -307,7 +301,7 @@ void erreur() {
 
 // Fonction permettant d'ouvrir le fichier texte d'une classe dans l'éditeur de texte du PC
 void editerClasse() {
-  File fichier = new File(dossierEleves(), classes.get(classeActuelle) + ".txt");         // On charge le fichier correspondant à la classe actuelle
+  File fichier = fichierClasse(classes.get(classeActuelle) + ".txt");                     // On charge le fichier correspondant à la classe actuelle
   if (fichier.exists() && Desktop.isDesktopSupported()) {                                 // On vérifie tout de même qu'il existe, et que l'ordinateur supporte l'édition 
     try {
       Desktop.getDesktop().edit(fichier);                                                 // On ouvre l'éditeur avec le fichier. Structure try/catch car il s'agie d'une opération sur un fichier (IO)
@@ -386,7 +380,7 @@ void chargerSallesEtClasses() {
   if (!dossierPhotos.isDirectory()) {
     dossierPhotos.mkdir();
   }
-  
+
   // Chargement des classes :
   classeActuelle = 0;                                   // On choisit la première classe de la liste
   classes = new ArrayList();                            // On initialise la liste

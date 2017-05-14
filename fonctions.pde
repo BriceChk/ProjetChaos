@@ -22,7 +22,7 @@ void centrerFenetre() {
   surface.setLocation(displayWidth / 2 - width / 2, displayHeight / 2 - height / 2);
 }
 
-// Transformer un x et un y en texte pour le stocker dans l'hashmap ("x y")
+// Transformer un x, un y et une largeur en texte pour les stocker dans l'hashmap ("x y largeur")
 String coordonnees(int x, int y, int largeur) {
   return x + " " + y + " " + largeur;
 }
@@ -39,7 +39,7 @@ int transformerEnY(String s) {
   return Integer.parseInt(t);
 }
 
-// Récupérer la largeur stocké dans l'hashmap
+// Récupérer la largeur stockée dans l'hashmap
 int transformerEnLargeur(String s) {
   String t = s.split(" ")[2];
   return Integer.parseInt(t);
@@ -56,12 +56,12 @@ void afficherBouton(String texte, int x, int y, int largeur, int hauteur) {
   text(texte, x, y, largeur, hauteur);
 }
 
-// Cette fonction retourne true si le bouton donné en parametre est survolé par la souris
+// Cette fonction retourne true si le bouton (ses coordonnées) donné en paramètre est survolé par la souris
 boolean survole(int x, int y, int largeur, int hauteur) {
   return mouseX >= x && mouseX <= x + largeur && mouseY >= y && mouseY <= y + hauteur;
 }
 
-// Récupérer le chemin vers le dossier Documents de la session de l'utilisateur
+// Récupérer le chemin vers le dossier Documents de la session de l'utilisateur (fonction trouvée sur internet)
 String mesDocuments() {
   JFileChooser fr = new JFileChooser();
   FileSystemView fw = fr.getFileSystemView();
@@ -69,13 +69,13 @@ String mesDocuments() {
 }
 
 // Récupérer le fichier qui correspond au dossier classes
-File dossierEleves() {
-  return new File(mesDocuments() + File.separator + "Plan de classe", "classes");
+File fichierClasse(String fichier) {
+  return new File(mesDocuments() + File.separator + "Plan de classe" + File.separator + "classes", fichier);
 }
 
 // Récupérer le fichier qui correspond au dossier salles
-File dossierSalles() {
-  return new File(mesDocuments() + File.separator + "Plan de classe", "salles");
+File fichierSalle(String fichier) {
+  return new File(mesDocuments() + File.separator + "Plan de classe" + File.separator + "salles", fichier);
 }
 
 // Récupérer le fichier qui correspond au dossier photos
